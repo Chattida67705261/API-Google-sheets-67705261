@@ -1,15 +1,15 @@
 <template>
-  <div class="container py-5">
+  <div class="product-list-page container py-5">
     <div class="text-center mb-4">
-      <h2 class="fw-bold text-success">Product List</h2>
+      <h2 class="page-title fw-bold">Product List</h2>
       <p class="text-muted">Data loaded from n8n webhook</p>
     </div>
 
-    <div class="card shadow-lg border-0 rounded-4">
+    <div class="card list-card shadow-lg border-0 rounded-4">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">Products</h5>
-          <button class="btn btn-success" @click="fetchProducts">
+          <h5 class="section-title mb-0">Products</h5>
+          <button class="btn reload-button" @click="fetchProducts">
             Reload Data
           </button>
         </div>
@@ -19,13 +19,13 @@
         </div>
 
         <div v-if="loading" class="text-center my-4">
-          <div class="spinner-border text-success"></div>
+          <div class="spinner-border spinner-accent"></div>
           <p class="mt-2">Loading product data...</p>
         </div>
 
         <div v-else-if="products.length" class="table-responsive">
-          <table class="table table-hover align-middle text-center">
-            <thead class="table-success">
+          <table class="table table-hover align-middle text-center product-table">
+            <thead>
               <tr>
                 <th>#</th>
                 <th>Product ID</th>
@@ -57,20 +57,21 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 
+const N8N_BASE_URL = 'http://localhost:5678'
+const PRODUCT_LIST_URL = `${N8N_BASE_URL}/webhook/products`
+
 const products = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
 
 const normalizeProducts = (payload) => {
-  if (Array.isArray(payload)) {
-    return payload
-  }
+  const items = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : []
 
-  if (Array.isArray(payload?.data)) {
-    return payload.data
-  }
-
-  return []
+  return [...items].reverse()
 }
 
 const fetchProducts = async () => {
@@ -80,17 +81,18 @@ const fetchProducts = async () => {
   try {
     // ตอนทดสอบใน n8n ให้เปลี่ยนเป็น `/webhook-test/products` และกด "Listen for test event"
     // หลัง Publish workflow แล้วค่อยใช้ `/webhook/products`
-    const response = await fetch('http://localhost:5678/webhook/products')
+    const response = await fetch(PRODUCT_LIST_URL)
 
     if (!response.ok) {
-      throw new Error('Failed to load products')
+      const detail = await response.text()
+      throw new Error(detail || 'Failed to load products')
     }
 
     const result = await response.json()
     products.value = normalizeProducts(result)
   } catch (error) {
     console.error(error)
-    errorMessage.value = 'Unable to load product data. Please check the n8n flow.'
+    errorMessage.value = error.message || 'Unable to load product data. Please check the n8n flow.'
     products.value = []
   } finally {
     loading.value = false
@@ -103,7 +105,49 @@ onMounted(() => {
 </script>
 
 <style scoped>
-body {
-  background-color: #f8f9fa;
+.product-list-page {
+  --page-bg: #f4f7fb;
+  --surface: #ffffff;
+  --primary: #6b8796;
+  --primary-dark: #4f6774;
+  --primary-soft: #e5edf1;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, var(--page-bg) 100%);
+}
+
+.page-title,
+.section-title {
+  color: var(--primary-dark);
+}
+
+.list-card {
+  background-color: var(--surface);
+}
+
+.reload-button {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.reload-button:hover,
+.reload-button:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+.spinner-accent {
+  color: var(--primary);
+}
+
+.product-table thead th {
+  background-color: var(--primary-soft);
+  color: var(--primary-dark);
+  border-bottom: none;
+}
+
+.product-table tbody tr:hover {
+  background-color: #f6fafc;
 }
 </style>

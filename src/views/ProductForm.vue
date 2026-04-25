@@ -1,11 +1,10 @@
 <template>
-  <div class="container py-5">
+  <div class="product-form-page container py-5">
     <div class="row justify-content-center">
       <div class="col-12 col-md-8 col-lg-6">
-        <div class="card shadow-lg border-0 rounded-4">
+        <div class="card form-card shadow-lg border-0 rounded-4">
           <div
-            class="card-header text-center text-white rounded-top-4"
-            style="background: linear-gradient(135deg, #198754, #20c997);"
+            class="card-header form-card-header text-center text-white rounded-top-4"
           >
             <h4 class="mb-1 fw-bold">Product Form</h4>
             <small>Submit product data to n8n webhook</small>
@@ -41,7 +40,7 @@
                 <input v-model.number="form.price" type="number" min="0" class="form-control" required />
               </div>
 
-              <button class="btn btn-success w-100 fw-bold" :disabled="loading">
+              <button class="btn submit-button w-100 fw-bold" :disabled="loading">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ loading ? 'Submitting...' : 'Save Product' }}
               </button>
@@ -112,6 +111,26 @@ const submitForm = async () => {
 </script>
 
 <style scoped>
+.product-form-page {
+  --page-bg: #f4f7fb;
+  --surface: #ffffff;
+  --primary: #6b8796;
+  --primary-dark: #4f6774;
+  --focus: rgba(107, 135, 150, 0.22);
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, var(--page-bg) 100%);
+}
+
+.form-card {
+  background-color: var(--surface);
+  overflow: hidden;
+}
+
+.form-card-header {
+  background: linear-gradient(135deg, #8aa3b1, #6b8796);
+  border-bottom: none;
+}
+
 .card {
   transition: 0.3s;
 }
@@ -120,8 +139,35 @@ const submitForm = async () => {
   transform: translateY(-5px);
 }
 
+.form-control {
+  background-color: #fbfdff;
+  border-color: #d5dfe5;
+}
+
+.form-label {
+  color: var(--primary-dark);
+}
+
 .form-control:focus {
-  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.2);
-  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem var(--focus);
+  border-color: var(--primary);
+}
+
+.submit-button {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.submit-button:hover,
+.submit-button:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+.submit-button:disabled {
+  background-color: #a9bbc4;
+  border-color: #a9bbc4;
 }
 </style>
